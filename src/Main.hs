@@ -20,18 +20,18 @@ main = do
     args <- getArgs
     let target = args !! 0
     let limit = read (args !! 1)
-    -- Discover ID.
     id <- parseId <$> api "users.get" [ ("user_ids", target) ]
-    -- Fetch friends.
     friends <- parseFriends limit <$> api "friends.get" [ ("user_id", id) ]
     print friends
     friendsNames <- (fmap parseName . api "users.get") `forkMapM` ( idToApiArg <$> friends )
     print friendsNames
-    -- Fetch their friends.
     friendsSquared <- Prelude.sequence $ fmap (parseFriends limit) . api "friends.get" <$> ( idToApiArg <$> friends )
     print $ friendsNames `zip` friendsSquared
+
     -- Compute mean.
     -- Compute deviation.
+    -- Get walls.
+    -- Find correlation between wall length and friends length.
     
     where
 
