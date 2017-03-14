@@ -46,13 +46,11 @@ api method args = parse <$> get url
     where
 
     url = exportURL URL
-        { url_type = Absolute
-            ( Host
-                { protocol = HTTP True
-                , host = "api.vk.com"
-                , port = Nothing
-                }
-            )
+        { url_type = Absolute Host
+            { protocol = HTTP True
+            , host = "api.vk.com"
+            , port = Nothing
+            }
         , url_path = "method" </> method
         , url_params = args
         }
