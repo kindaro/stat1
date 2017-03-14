@@ -1,17 +1,17 @@
 module Main where
 
-import Control.Arrow
-import Control.Lens
-import Control.Monad.Loops
-import Data.Aeson.Lens
-import qualified Data.ByteString.Lazy as B
-import Data.Maybe
-import qualified Data.Text as T
-import qualified Data.Vector as V
-import Network.URL
-import Network.Wreq
-import System.Environment
-import System.FilePath.Posix
+import           Control.Arrow
+import           Control.Lens
+import           Control.Monad.Loops
+import           Data.Aeson.Lens
+import qualified Data.ByteString.Lazy  as B
+import           Data.Maybe
+import qualified Data.Text             as T
+import qualified Data.Vector           as V
+import           Network.URL
+import           Network.Wreq
+import           System.Environment
+import           System.FilePath.Posix
 
 
 
