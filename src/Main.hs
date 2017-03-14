@@ -2,28 +2,33 @@ module Main where
 
 import Control.Arrow
 import Control.Lens
-import System.FilePath.Posix
-import qualified Data.ByteString.Lazy as B
+import Control.Monad.Loops
 import Data.Aeson.Lens
+import qualified Data.ByteString.Lazy as B
 import Data.Maybe
-import qualified Data.Vector as V
 import qualified Data.Text as T
+import qualified Data.Vector as V
 import Network.URL
 import Network.Wreq
+import System.Environment
+import System.FilePath.Posix
 
 
-target = "ignat_insarov"
 
 main :: IO ()
 main = do
+    args <- getArgs
+    let target = args !! 0
+    let limit = read (args !! 1)
     -- Discover ID.
     id <- parseId <$> api "users.get" [ ("user_ids", target) ]
     -- Fetch friends.
-    friends <- parseFriends <$> api "friends.get" [ ("user_id", id) ]
+    friends <- parseFriends limit <$> api "friends.get" [ ("user_id", id) ]
     print friends
-    friendsNames <- sequence $ (fmap parseName . api "users.get") <$> ( (:[]) . ("user_id",) . show <$> friends )
+    friendsNames <- (fmap parseName . api "users.get") `forkMapM` ( idToApiArg <$> friends )
+    print friendsNames
     -- Fetch their friends.
-    friendsSquared <- Prelude.sequence $ fmap parseFriends . api "friends.get" <$> ( (:[]) . ("user_id", ) . show <$> friends)
+    friendsSquared <- Prelude.sequence $ fmap (parseFriends limit) . api "friends.get" <$> ( idToApiArg <$> friends )
     print $ friendsNames `zip` friendsSquared
     -- Compute mean.
     -- Compute deviation.
@@ -32,7 +37,8 @@ main = do
 
     parseId = show . fromMaybe (error "No parse for ID!") . (^? nth 0 . key "uid" . _Integral )
     parseName = T.unpack . fromMaybe (error "No parse for name!") . (^? nth 0 . key "first_name" . _String )
-    parseFriends = take 10 . ( ^.. values . _Integral )
+    parseFriends limit = take limit . ( ^.. values . _Integral )
+    idToApiArg = pure . ("user_id", ) . show
 
 
 api method args = parse <$> get url
