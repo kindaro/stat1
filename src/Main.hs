@@ -5,6 +5,7 @@ import           Control.Lens
 import           Control.Monad.Loops
 import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy  as B
+import           Data.Either.Combinators
 import           Data.Maybe
 import qualified Data.Text             as T
 import qualified Data.Vector           as V
@@ -23,7 +24,7 @@ main = do
     id <- parseId <$> api "users.get" [ ("user_ids", target) ]
     friends <- parseFriends limit <$> api "friends.get" [ ("user_id", id) ]
     print friends
-    friendsNames <- (fmap parseName . api "users.get") `forkMapM` ( idToApiArg <$> friends )
+    friendsNames <- (fmap.fmap) (fromRight "Failed to get name!") $ (fmap parseName . api "users.get") `forkMapM` ( idToApiArg <$> friends )
     print friendsNames
     friendsSquared <- Prelude.sequence $ fmap (parseFriends limit) . api "friends.get" <$> ( idToApiArg <$> friends )
     print $ friendsNames `zip` friendsSquared
@@ -36,7 +37,7 @@ main = do
     where
 
     parseId = show . fromMaybe (error "No parse for ID!") . (^? nth 0 . key "uid" . _Integral )
-    parseName = T.unpack . fromMaybe (error "No parse for name!") . (^? nth 0 . key "first_name" . _String )
+    parseName = fromMaybe (error "No parse for name!") . (^? nth 0 . key "first_name" . _String )
     parseFriends limit = take limit . ( ^.. values . _Integral )
     idToApiArg = pure . ("user_id", ) . show
 

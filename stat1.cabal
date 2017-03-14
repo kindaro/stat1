@@ -25,6 +25,7 @@ executable stat1
                      , text
                      , bytestring
                      , vector
+                     , either
                      , filepath
                      , url
                      , lens
