@@ -18,7 +18,7 @@ cabal-version:       >=1.10
 
 executable stat1
   main-is:             Main.hs
-  extensions: OverloadedStrings, TupleSections
+  default-extensions: OverloadedStrings, TupleSections
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base >=4.9 && <4.10
