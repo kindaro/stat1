@@ -17,21 +17,56 @@ import           System.Environment
 import           System.FilePath.Posix
 
 
+type Text = T.Text
+
+class Method method where
+    method :: In method input -> Out method output -> input -> IO output
+    empty :: method
+
+    method = act
+
+data In method input where
+    In :: Method method => (input -> Arg method) -> In method input
+
+data Out method output where
+    Out :: Method method => (Val method -> output) -> Out method output
+
+newtype Arg method = Arg [ (String, String) ]
+
+newtype Val method = Val Value
+
+data FriendsGet = FriendsGet
+
+instance Show FriendsGet where show x = "friends.get"
+
+instance Method FriendsGet where empty = FriendsGet
 
 main :: IO ()
-main = do
-    args <- getArgs
-    let target = args !! 0
-    id <- parseId <$> api "users.get" [ ("user_ids", target) ]
-    friends <- getFriends id
-    friendsNames <- getNames friends
-    friendsSquared <- Prelude.sequence $ fmap parseFriends . api "friends.get" <$> ( idToArg <$> friends )
-    print $ friendsNames `zip` friendsSquared
+main =
+    undefined
+    -- do
+    -- args <- getArgs
+    -- let target = args !! 0
+    -- id <- parseId <$> api "users.get" [ ("user_ids", target) ]
+    -- friends <- getFriends id
+    -- friendsNames <- getNames friends
+    -- friendsSquared <- Prelude.sequence $ fmap parseFriends . api "friends.get" <$> ( idToArg <$> friends )
+    -- print $ friendsNames `zip` friendsSquared
 
     -- Compute mean.
     -- Compute deviation.
     -- Get walls.
     -- Find correlation between wall length and friends length.
+
+act :: Method method
+    => In method input  -- ^ The input fitting converts assorted data to api arguments.
+    -> Out method output -- ^ The output fitting converts returned object to desired strict result.
+    -> input -> IO output
+
+    -- Naturally there is correspondence in between the types of input and output fittings and the
+    -- method.
+
+act (In f) (Out g) = f >>> _ >>> fmap (\x -> g $ Val x)
 
 -- ** Parser functions.
 -- All of these have a general signature of form:
@@ -51,29 +86,29 @@ parseNames
         &&& (^.. values . key "last_name"  . _String)
           ) >>> uncurry zip 
 
-parseFriends :: Value -> [Int] -- ^ Operates on "friends.get".
-parseFriends = ( ^.. values . _Integral )
+parseFriends :: Val FriendsGet -> [Int]
+parseFriends (Val x) = x ^.. values . _Integral
 
 -- ** Various pure helper functions used to construct arguments to api calls.
 
-idToArg :: Int -> [ (String, String) ]
-idToArg = pure . ("user_id", ) . show
+idToArg :: Int -> Arg FriendsGet
+idToArg = Arg . pure . ("user_id", ) . show
 
-idsToArg :: [Int] -> [ (String, String) ]
-idsToArg xs = [ ("user_ids", intercalate "," . fmap show $ xs) ]
+-- idsToArg :: [Int] -> [ (String, String) ]
+-- idsToArg xs = [ ("user_ids", intercalate "," . fmap show $ xs) ]
 
 -- ** Getter functions.
 -- All of these have a general signature of form:
 -- f :: a -> IO b
 
-getNames :: [Int] -> IO [ (T.Text, T.Text) ]
-getNames =  idsToArg >>> api "users.get" >>> fmap parseNames
+-- getNames :: [Int] -> IO [ (T.Text, T.Text) ]
+-- getNames =  idsToArg >>> api "users.get" >>> fmap parseNames
 
-getFriends :: Int -> IO [Int]
-getFriends u = parseFriends <$> api "friends.get" [ ("user_id", show u) ]
 
-api :: FilePath -> [ (String, String) ] -> IO Value
-api method args = parse <$> get url
+-- ** The api.
+
+api :: Arg method -> IO (Val method)
+api (Arg arg) = fmap Val $ parse <$> get url
 
     where
 
@@ -83,13 +118,15 @@ api method args = parse <$> get url
             , host = "api.vk.com"
             , port = Nothing
             }
-        , url_path = "method" </> method
-        , url_params = args
+        , url_path = "method" </> show empty
+        , url_params = arg
         }
 
     parse r = fromMaybe
         ( error . show $ r ^. responseBody . key "error" . key "error_msg" . _String )
         ( r ^? responseBody . key "response" )
+
+-- ** Whatever else.
 
 -- I need a function that does [uid] -> [uid, [uid] (friends)] conversion.
 -- Then, I need another that does [uid, [uid] (friends)] -> [uid, [uid, [uid] (friends ^ 2) ] ].
