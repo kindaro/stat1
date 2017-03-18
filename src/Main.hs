@@ -44,15 +44,10 @@ main =
     -- Get walls.
     -- Find correlation between wall length and friends length.
 
--- ** Getter functions.
--- All of these have a general signature of form:
--- f :: a -> IO b
 
--- ** outputFitting stuff.
+-- * Future development.
 
--- ** The api.
-
--- ** Whatever else.
+-- ** Strategy for evaluation.
 
 -- I need a function that does [uid] -> [uid, [uid] (friends)] conversion.
 -- Then, I need another that does [uid, [uid] (friends)] -> [uid, [uid, [uid] (friends ^ 2) ] ].
@@ -68,3 +63,11 @@ main =
 -- 
 --
 
+-- ** Pool of workers.
+--
+-- Use QSem and Concurrently?
+
+-- ** Memoizing.
+--
+-- Memoize api or runMethod?
+--
