@@ -1,5 +1,6 @@
 module Api.Vk
     ( UsersGet
+    , getNames
     , idsToArgs
     , parseId
     , parseFirstName
@@ -7,6 +8,7 @@ module Api.Vk
     , parseNames
 
     , FriendsGet
+    , getFriends
     , idToArgs
     , parseFriends
     ) where

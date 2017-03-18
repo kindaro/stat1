@@ -33,10 +33,11 @@ main =
         parseId
         target
     print id
-    -- friends <- getFriends id
-    -- friendsNames <- getNames friends
-    -- friendsSquared <- Prelude.sequence $ fmap parseFriends . api "friends.get" <$> ( idToArg <$> friends )
-    -- print $ friendsNames `zip` friendsSquared
+    friends <- getFriends id
+    friendsNames <- getNames friends
+    print friendsNames
+    friendsSquared <- Prelude.sequence $ getFriends <$> friends
+    print $ friendsNames `zip` friendsSquared
 
     -- Compute mean.
     -- Compute deviation.
@@ -46,10 +47,6 @@ main =
 -- ** Getter functions.
 -- All of these have a general signature of form:
 -- f :: a -> IO b
-
--- getNames :: [Int] -> IO [ (T.Text, T.Text) ]
--- getNames =  idsToArg >>> api "users.get" >>> fmap parseNames
-
 
 -- ** outputFitting stuff.
 
@@ -65,3 +62,9 @@ main =
 -- nReturn :: [Int] -> (IO) [(Int, [Int])]
 -- nReturn us = parseFriends 10 <$> api "friends.get"
 -- nFmap :: [(Int, [Int])] -> [(Int, (IO) [(Int, [Int])])]
+
+-- My system should deepen the view with every iteration.
+-- Maybe should I start with a definition of "view."
+-- 
+--
+

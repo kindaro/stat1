@@ -1,5 +1,6 @@
 module Api.Vk.UsersGet
     ( UsersGet
+    , getNames
     , idsToArgs
     , parseId
     , parseFirstName
@@ -22,6 +23,8 @@ type Text = T.Text
 data UsersGet
 instance Method UsersGet where name = const "users.get"
 
+
+getNames = idsToArgs `runMethod` parseNames
 
 idsToArgs :: [Int] -> Args UsersGet
 idsToArgs xs = Args [ ("user_ids", intercalate "," . fmap show $ xs) ]

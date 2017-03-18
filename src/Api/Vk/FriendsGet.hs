@@ -1,5 +1,6 @@
 module Api.Vk.FriendsGet
     ( FriendsGet
+    , getFriends
     , idToArgs
     , parseFriends
     ) where
@@ -18,6 +19,8 @@ type Text = T.Text
 data FriendsGet
 instance Method FriendsGet where name = const "friends.get"
 
+
+getFriends = idToArgs `runMethod` parseFriends
 
 idToArgs :: Int -> Args FriendsGet
 idToArgs = Args . pure . ("user_id", ) . show
