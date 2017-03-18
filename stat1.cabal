@@ -26,17 +26,19 @@ executable stat1
   -- other-extensions:    
   build-depends:         base >=4.9 && <4.10
                        , text
-                       , bytestring
-                       , vector
-                       , either
-                       , monad-loops
-
                        , filepath
                        , url
                        , wreq
                        , lens
                        , aeson
                        , lens-aeson
+
+                       , bytestring
+                       , either
+                       , vector
+                       , monad-loops
+                       , deepseq
+
   hs-source-dirs:      src
   default-language:    Haskell2010
 

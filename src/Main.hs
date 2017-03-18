@@ -1,6 +1,7 @@
 module Main where
 
 import           Control.Arrow
+import           Control.DeepSeq
 import           Control.Monad         (ap)
 import           Control.Monad.Loops
 import qualified Data.ByteString.Lazy  as B
@@ -38,7 +39,7 @@ main =
     friends <- getFriends id
     friendsNames <- getNames friends
     print friendsNames
-    friendsSquared <- foldl' (flip $ ap . fmap (:)) (pure []) $ getFriends <$> friends
+    friendsSquared <- Prelude.sequence $ (fmap force . getFriends) <$> friends
     print $ friendsNames `zip` friendsSquared
 
     -- Compute mean.
