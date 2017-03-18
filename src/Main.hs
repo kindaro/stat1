@@ -2,6 +2,7 @@ module Main where
 
 import           Control.Arrow
 import           Control.DeepSeq
+import           Control.Exception
 import           Control.Monad         (ap)
 import           Control.Monad.Loops
 import qualified Data.ByteString.Lazy  as B
@@ -39,7 +40,7 @@ main =
     friends <- getFriends id
     friendsNames <- getNames friends
     print friendsNames
-    friendsSquared <- Prelude.sequence $ (fmap force . getFriends) <$> friends
+    friendsSquared <- fmap (fmap (either (const []) Prelude.id)) $ forkMapM (fmap force . getFriends) $ friends
     print $ friendsNames `zip` friendsSquared
 
     -- Compute mean.
