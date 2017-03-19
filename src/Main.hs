@@ -1,6 +1,7 @@
 module Main where
 
 import           Control.Arrow
+import Control.Parallel.Strategies
 import           Control.Monad.Loops
 import qualified Data.ByteString.Lazy  as B
 import           Data.Either.Combinators
@@ -36,7 +37,7 @@ main =
     friends <- getFriends id
     friendsNames <- getNames friends
     print friendsNames
-    friendsSquared <- Prelude.sequence $ getFriends <$> friends
+    friendsSquared <- Prelude.sequence $ parMap rpar getFriends friends
     print $ friendsNames `zip` friendsSquared
 
     -- Compute mean.
@@ -45,29 +46,50 @@ main =
     -- Find correlation between wall length and friends length.
 
 
--- * Future development.
+{-
 
--- ** Strategy for evaluation.
+* Future Development
 
--- I need a function that does [uid] -> [uid, [uid] (friends)] conversion.
--- Then, I need another that does [uid, [uid] (friends)] -> [uid, [uid, [uid] (friends ^ 2) ] ].
--- Then, I need a third one that goes [uid, [uid, [uid]]] -> [uid, [uid]].
--- It would be a return, an fmap and a join.
+** Strategy for evaluation.
 
--- nReturn :: [Int] -> (IO) [(Int, [Int])]
--- nReturn us = parseFriends 10 <$> api "friends.get"
--- nFmap :: [(Int, [Int])] -> [(Int, (IO) [(Int, [Int])])]
+I need a function that does [uid] -> [uid, [uid] (friends)] conversion.
+Then, I need another that does [uid, [uid] (friends)] -> [uid, [uid, [uid] (friends ^ 2) ] ].
+Then, I need a third one that goes [uid, [uid, [uid]]] -> [uid, [uid]].
+It would be a return, an fmap and a join.
 
--- My system should deepen the view with every iteration.
--- Maybe should I start with a definition of "view."
--- 
---
+nReturn :: [Int] -> (IO) [(Int, [Int])]
+nReturn us = parseFriends 10 <$> api "friends.get"
+nFmap :: [(Int, [Int])] -> [(Int, (IO) [(Int, [Int])])]
 
--- ** Pool of workers.
---
--- Use QSem and Concurrently?
+My system should deepen the view with every iteration.
+Maybe should I start with a definition of "view."
 
--- ** Memoizing.
---
--- Memoize api or runMethod?
---
+I can receive errors sometimes... When state changes between two queries, say an uid becomes
+inaccessible. So I need to number my data...
+
+I may want to gather a set of pictures over time and try to determine how clusters change.
+
+** Pool of workers.
+
+Use QSem and Concurrently?
+
+** Memoizing.
+
+Memoize api or runMethod?
+
+** Retry on failure N times.
+
+Responsibility of the worker?
+I guess the scheduler, rather.
+
+* General Programme
+
+1. There is a runner and there is a query.
+
+Runner is busy taking inputs and returning outputs. Query is written in DSL and as it evaluates it
+optimizes itself so it can call the runner the most optimal way.
+
+I must create a graph of "input -> output" and it would represent a kind of a type system for the
+API. A path on this graph shows how I can juggle 
+
+-}
